@@ -4,11 +4,16 @@ using System.Text;
 
 namespace EducationPortal.UI
 {
-    class LogoutCommand : ICommand
+    class ExitCommand: ICommand
     {
+        public bool IsAvailable()
+        {
+            return true;
+        }
+
         public void Execute()
         {
-            throw new NotImplementedException();
+            Environment.Exit(0);
         }
     }
 }

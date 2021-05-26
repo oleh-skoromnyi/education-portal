@@ -6,6 +6,8 @@ namespace EducationPortal.UI
 {
     public interface ICommand
     {
+        public bool IsAvailable();
+
         public void Execute();
     }
 }

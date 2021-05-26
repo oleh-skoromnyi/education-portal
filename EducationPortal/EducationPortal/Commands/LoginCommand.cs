@@ -1,4 +1,4 @@
-﻿using EducationPortal.BusinessLogic;
+﻿using EducationPortal.BusinessLogicLayer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,12 +7,17 @@ namespace EducationPortal.UI
 {
     public class LoginCommand : ICommand
     {
-        private Authorization authorization;
+        private IAuth authorization;
 
-        public LoginCommand(Authorization auth)
+        public LoginCommand(IAuth auth)
         {
             this.authorization = auth;
         }
+        public bool IsAvailable()
+        {
+            return !authorization.IsLogin();
+        }
+
         public void Execute()
         {
             Console.Clear();

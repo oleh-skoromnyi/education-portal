@@ -1,4 +1,4 @@
-﻿using EducationPortal.BusinessLogic;
+﻿using EducationPortal.BusinessLogicLayer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,8 +8,8 @@ namespace EducationPortal.UI
     public class CommandManager
     {
         CommandProcessor commandProcessor;
-        Authorization authorization;
-        public CommandManager(CommandProcessor processor, Authorization auth)
+        IAuth authorization;
+        public CommandManager(CommandProcessor processor, IAuth auth)
         {
             this.commandProcessor = processor;
             this.authorization = auth;
@@ -17,9 +17,8 @@ namespace EducationPortal.UI
 
         public void Start()
         {
-            
-            string input = String.Empty;
-            while (input != "Exit")
+            string input = "";
+            while (true)
             {
                 Console.Clear();
                 Console.WriteLine($"Choose command, {authorization.GetLogin()}:");
@@ -27,9 +26,13 @@ namespace EducationPortal.UI
                 {
                     Console.WriteLine(command);
                 }
-                Console.WriteLine("Exit");
+
                 input = Console.ReadLine();
-                commandProcessor.Execute(input.Trim());
+                if(!commandProcessor.Execute(input.Trim()))
+                {
+                    Console.WriteLine($"Command not found. Press ENTER and try again.");
+                    Console.ReadLine();
+                }
             }
         }
 
