@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -10,8 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EducationPortal.BusinessLogicLayer\EducationPortal.BusinessLogicLayer.csproj" />
-    <ProjectReference Include="..\EducationPortal.DataAccessLayer\EducationPortal.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\EducationPortal.BusinessLogicLayer\EducationPortal.BLL.csproj" />
+    <ProjectReference Include="..\EducationPortal.Core\EducationPortal.Core.csproj" />
+    <ProjectReference Include="..\EducationPortal.DAL.EFCore\EducationPortal.DAL.EFCore.csproj" />
+    <ProjectReference Include="..\EducationPortal.DAL.FileDb\EducationPortal.DAL.FileDb.csproj" />
   </ItemGroup>
 
 </Project>

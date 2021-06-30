@@ -1,68 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using EducationPortal.Core;
 
-namespace EducationPortal.BusinessLogicLayer
+namespace EducationPortal.BLL
 {
-    public class AuthService : IAuth
+    public class AuthService : IAuthService
     {
-        private IDbContext<User> dbContext;
-        private User user;
+        private IRepository<User> _repository;
 
-        public AuthService(IDbContext<User> context)
+        public AuthService(IRepository<User> context)
         {
-            this.dbContext = context;
+            this._repository = context;
         }
 
-        public bool Login(string login, string password)
+        public int Login(string login, string password)
         {
-            User temp = dbContext.Load(login);
-            if (temp == null)
+            int id = _repository.FindIndex(login);
+            if (id != 0)
             {
-                return false;
+                User temp = _repository.Find(new Specification<User>(x=>x.Id == id));
+                if (temp != null)
+                {
+                    if (VerifyHash(password, temp.Password))
+                    {
+                        return temp.Id;
+                    }
+                }
             }
-            if (VerifyHash(password, temp.Password))
-            {
-                this.user = temp;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return -1;
         }
 
         public bool Register(string login, string password)
         {
-            User temp = new User(
-               dbContext.Count(),
-               login,
-               GetHash(password));
-            return dbContext.Save(temp);
-        }
-
-        public bool Logout()
-        {
-            user = null;
-            return true;
-        }
-
-        public bool IsLogin()
-        {
-            return user != null ? true : false;
-        }
-
-        public string GetLogin()
-        {
-            if (user != null)
+            string hashedPass = GetHash(password);
+            if (_repository.FindIndex(login) == 0)
             {
-                return user.Login;
+                return _repository.Save(new User { Login = login, Password = hashedPass });
             }
-            else
-            {
-                return "Anonim";
-            }
+            return false;
         }
 
         private string GetHash(string input)
