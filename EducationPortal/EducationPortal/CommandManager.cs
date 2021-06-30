@@ -1,37 +1,50 @@
-﻿using EducationPortal.BusinessLogicLayer;
+﻿using EducationPortal.Core;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EducationPortal.UI
 {
     public class CommandManager
     {
-        CommandProcessor commandProcessor;
-        IAuth authorization;
-        public CommandManager(CommandProcessor processor, IAuth auth)
+        private CommandProcessor commandProcessor;
+        private IAuthService authService;
+        private IUserService userService;
+        protected int userId = -1;
+
+        public CommandManager(CommandProcessor processor, IAuthService authService, IUserService userService)
         {
             this.commandProcessor = processor;
-            this.authorization = auth;
+            this.authService = authService;
+            this.userService = userService;
         }
 
         public void Start()
         {
-            string input = "";
             while (true)
             {
+                var login = userService.GetUserLogin(userId);
                 Console.Clear();
-                Console.WriteLine($"Choose command, {authorization.GetLogin()}:");
-                foreach (var command in commandProcessor.getCommands())
+                Console.WriteLine($"Choose command, {login}:");
+                var commands = commandProcessor.getCommands();
+                foreach (var command in commands)
                 {
                     Console.WriteLine(command);
                 }
-
-                input = Console.ReadLine();
-                if(!commandProcessor.Execute(input.Trim()))
+                int index;
+                if (int.TryParse(Console.ReadLine(), out index))
                 {
-                    Console.WriteLine($"Command not found. Press ENTER and try again.");
-                    Console.ReadLine();
+                    if (index <= commands.Count && index > 0)
+                    {
+                        if (!commandProcessor.Execute(ref userId,commands[index - 1].Split('.')[1].Trim()))
+                        {
+                            Console.WriteLine($"Command not found. Press ENTER and try again.");
+                            Console.ReadLine();
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Command not found. Press ENTER and try again.");
+                        Console.ReadLine();
+                    }
                 }
             }
         }

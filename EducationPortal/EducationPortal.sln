@@ -5,9 +5,13 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.UI", "EducationPortal\EducationPortal.UI.csproj", "{EB3BB638-E9D7-4759-836C-5A1FEDFB9B34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EducationPortal.DataAccessLayer", "EducationPortal.DataAccessLayer\EducationPortal.DataAccessLayer.csproj", "{44E7F2CB-48BF-4D24-ACD2-176CC9403446}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.BLL", "EducationPortal.BusinessLogicLayer\EducationPortal.BLL.csproj", "{0D2DCA83-A269-4FFF-8860-04CFB35AA6AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EducationPortal.BusinessLogicLayer", "EducationPortal.BusinessLogicLayer\EducationPortal.BusinessLogicLayer.csproj", "{0D2DCA83-A269-4FFF-8860-04CFB35AA6AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.Core", "EducationPortal.Core\EducationPortal.Core.csproj", "{5EB128D0-CF16-44DB-B62D-535D72B09A52}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.DAL.EFCore", "EducationPortal.DAL.EFCore\EducationPortal.DAL.EFCore.csproj", "{66D97AC6-2ED6-40EE-93BB-76CDB8D224EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.DAL.FileDb", "EducationPortal.DAL.FileDb\EducationPortal.DAL.FileDb.csproj", "{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +23,22 @@ Global
 		{EB3BB638-E9D7-4759-836C-5A1FEDFB9B34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB3BB638-E9D7-4759-836C-5A1FEDFB9B34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB3BB638-E9D7-4759-836C-5A1FEDFB9B34}.Release|Any CPU.Build.0 = Release|Any CPU
-		{44E7F2CB-48BF-4D24-ACD2-176CC9403446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{44E7F2CB-48BF-4D24-ACD2-176CC9403446}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{44E7F2CB-48BF-4D24-ACD2-176CC9403446}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{44E7F2CB-48BF-4D24-ACD2-176CC9403446}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D2DCA83-A269-4FFF-8860-04CFB35AA6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D2DCA83-A269-4FFF-8860-04CFB35AA6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D2DCA83-A269-4FFF-8860-04CFB35AA6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D2DCA83-A269-4FFF-8860-04CFB35AA6AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EB128D0-CF16-44DB-B62D-535D72B09A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EB128D0-CF16-44DB-B62D-535D72B09A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EB128D0-CF16-44DB-B62D-535D72B09A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EB128D0-CF16-44DB-B62D-535D72B09A52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66D97AC6-2ED6-40EE-93BB-76CDB8D224EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66D97AC6-2ED6-40EE-93BB-76CDB8D224EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66D97AC6-2ED6-40EE-93BB-76CDB8D224EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66D97AC6-2ED6-40EE-93BB-76CDB8D224EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
