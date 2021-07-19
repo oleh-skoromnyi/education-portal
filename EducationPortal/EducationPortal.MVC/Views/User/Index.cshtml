@@ -1,0 +1,130 @@
+﻿@{
+    ViewData["Title"] = "User menu";
+}
+
+<div class="container">
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+    }
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+    @if (ViewBag.Errors != null)
+    {
+        @foreach (var error in ViewBag.Errors)
+        {
+            <div class="alert alert-danger">@error.ErrorMessage</div>
+        }
+    }
+
+    <form asp-controller="User" asp-action="ChangePersonalData" method="post">
+        <!-- Input and Submit elements -->
+        <div class="form-group">
+            <label>Name</label><br />
+            <input class="form-control" type="text" name="Name" value="@ViewBag.userName">
+        </div>
+        <div class="form-group">
+            <label>Email</label><br />
+            <input class="form-control" type="text" name="Description" value="@ViewBag.userEmail">
+        </div>
+        <div class="form-group">
+            <label>Phone</label><br />
+            <input class="form-control" type="text" name="Description" value="@ViewBag.userPhone">
+        </div>
+        <input class="btn btn-primary" type="submit" value="Submit">
+    </form>
+    <h2>User skills</h2>
+    <table id="skillTable" class="table">
+        <tr>
+            <th>Id</th>
+            @*<th>Name</th>
+            <th>Description</th>*@
+            <th>Level</th>
+        </tr>
+        @foreach (var item in ViewBag.userSkillsItems)
+        {
+            <tr>
+                <td>@item.SkillId</td>
+                @*<td>@item.Name</td>
+                <td>@item.Description</td>*@
+                <td>@item.Level</td>
+            </tr>
+        }
+    </table>
+    <form asp-controller="Home" asp-action="ChangePage" method="post">
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.userSkillsPageCount; i++)
+            {
+                <li class="page-item @(i == ViewBag.userSkillsPageNumber?"active":"")"><input type="submit" class="page-link" name="userSkillPage" value="@i"></li>
+            }
+        </ul>
+    </form>
+    <h2>User courses</h2>
+    <table id="userCoursesTable" class="table">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>IsComplete</th>
+            <th>Progress</th>
+            <th>Materials</th>
+        </tr>
+        @foreach (var item in ViewBag.userCoursesItems)
+        {
+            <tr>
+                <td>@item.CourseId</td>
+                <td>@item.Course.Name</td>
+                <td>@item.Course.Description</td>
+                <td>@item.IsComplete</td>
+                <td>@item.Progress</td>
+                <td>
+                    <form asp-controller="User" asp-action="GoToCourse">
+                        <input name="courseId" value="@item.CourseId" hidden="hidden" />
+                        <input class="btn btn-primary" type="submit" value="Go" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </table>
+    <form asp-controller="Home" asp-action="ChangePage" method="post">
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.userCoursesPageCount; i++)
+            {
+                <li class="page-item @(i == ViewBag.userCoursesPageNumber?"active":"")"><input type="submit" class="page-link" name="userCoursePage" value="@i"></li>
+            }
+        </ul>
+    </form>
+    <h2>Available courses</h2>
+    <table id="availableCoursesTable" class="table">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Start</th>
+        </tr>
+        @foreach (var item in ViewBag.availableCoursesItems)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>
+                    <form asp-controller="User" asp-action="StartCourse">
+                        <input name="courseId" value="@item.Id" hidden="hidden" />
+                        <input class="btn btn-primary" type="submit" value="Start" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </table>
+    <form asp-controller="Home" asp-action="ChangePage" method="post">
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.availableCoursesPageCount; i++)
+            {
+                <li class="page-item @(i == ViewBag.availableCoursesPageNumber?"active":"")"><input type="submit" class="page-link" name="availableCoursePage" value="@i"></li>
+            }
+        </ul>
+    </form>
+</div>

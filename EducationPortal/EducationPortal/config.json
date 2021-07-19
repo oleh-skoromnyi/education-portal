@@ -1,0 +1,10 @@
+{
+  "EFConnectionString": "Server=.\\SQLEXPRESS;Database=EducationPortalDb;Trusted_Connection=True;",
+  "FileDBPathToUsers": "User.db",
+  "FileDBPathToSkills": "Skill.db",
+  "FileDBPathToCourses": "Course.db",
+  "FileDBPathToArticlesMaterials": "Material.Article.db",
+  "FileDBPathToBooksMaterials": "Material.Book.db",
+  "FileDBPathToTestsMaterials": "Material.Test.db",
+  "FileDBPathToVideoMaterials": "Material.Video.db"
+}

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EducationPortal.UI
+﻿namespace EducationPortal.UI.Commands
 {
     public interface ICommand
     {
-        public bool IsAvailable();
+        public string Name { get; }
+        public bool IsAvailable(State state);
 
-        public void Execute();
+        public void Execute(ref State state, ref int userId);
     }
 }

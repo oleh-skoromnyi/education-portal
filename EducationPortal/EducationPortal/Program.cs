@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using EducationPortal.UI;
+﻿using EducationPortal.UI;
 using Autofac;
-using EducationPortal.BusinessLogicLayer;
 
 namespace EducationPortal
 {
