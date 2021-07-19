@@ -21,7 +21,7 @@ namespace EducationPortal.UI
         {
             while (true)
             {
-                var login = userService.GetUserLogin(userId);
+                var login = userService.GetUserLoginAsync(userId).GetAwaiter().GetResult();
                 Console.Clear();
                 Console.WriteLine($"Choose command, {login}:");
                 var commands = commandProcessor.getCommands();

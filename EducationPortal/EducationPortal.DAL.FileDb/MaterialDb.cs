@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using EducationPortal.Core;
 
 namespace EducationPortal.DAL
@@ -23,22 +25,21 @@ namespace EducationPortal.DAL
             defaultPathTest = pathToTestDb;
         }
 
-        public int Count()
+        public async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
-            List<Material> materialList = LoadList();
-            return materialList.Count;
+            var materialList = await LoadListAsync(cancellationToken);
+            return materialList.Count();
         }
 
-        public bool Save(Material entity)
+        public async Task<bool> InsertAsync(Material entity, CancellationToken cancellationToken = default)
         {
-            List<Material> materialList = LoadList();
+            var materialList = await LoadListAsync(cancellationToken);
             if (!materialList.Any(x => x.Id == entity.Id))
             {
                 var temp = entity;
                 temp.Id = materialList.Count() + 1;
                 materialList.Add(temp);
-                SaveList(materialList);
-                return true;
+                return await SaveListAsync(materialList);
             }
             else
             {
@@ -46,15 +47,14 @@ namespace EducationPortal.DAL
             }
         }
 
-        public bool Update(Material entity)
+        public async Task<bool> UpdateAsync(Material entity, CancellationToken cancellationToken = default)
         {
-            List<Material> materialList = LoadList();
-            int index = materialList.FindIndex(x => x.Id == entity.Id);
+            var materialList = await LoadListAsync(cancellationToken);
+            var index = materialList.FindIndex(x => x.Id == entity.Id);
             if (index != -1)
             {
                 materialList[index] = entity;
-                SaveList(materialList);
-                return true;
+                return await SaveListAsync(materialList);
             }
             else
             {
@@ -62,19 +62,14 @@ namespace EducationPortal.DAL
             }
         }
 
-        public Material Find(int id)
+        public async Task<bool> ExistAsync(Specification<Material> specification, CancellationToken cancellationToken = default)
         {
-            List<Material> materialList = LoadList();
-            return materialList.Find(x => x.Id == id);
+            var materialList = await LoadListAsync(cancellationToken);
+            return materialList.AsQueryable().Any(specification.Expression);
         }
 
-        public bool Exist(int id)
-        {
-            List<Material> materialList = LoadList();
-            return materialList.Exists(x => x.Id == id);
-        }
 
-        public List<Material> LoadList()
+        private async Task<List<Material>> LoadListAsync(CancellationToken cancellationToken = default)
         {
             var result = new List<Material>();
             if (!File.Exists(defaultPathArticle))
@@ -94,61 +89,70 @@ namespace EducationPortal.DAL
                 File.Create(defaultPathVideo).Close();
             }
 
-            string jsonString;
-            jsonString = File.ReadAllText(defaultPathArticle);
-            if (jsonString != "")
-            {
-                result.AddRange(JsonSerializer.Deserialize<List<InternetArticleMaterial>>(jsonString));
-            }
-            jsonString = File.ReadAllText(defaultPathBook);
-            if (jsonString != "")
-            {
-                result.AddRange(JsonSerializer.Deserialize<List<DigitalBookMaterial>>(jsonString));
-            }
-            jsonString = File.ReadAllText(defaultPathTest);
-            if (jsonString != "")
-            {
-                result.AddRange(JsonSerializer.Deserialize<List<TestMaterial>>(jsonString));
-            }
-            jsonString = File.ReadAllText(defaultPathVideo);
-            if (jsonString != "")
-            {
-                result.AddRange(JsonSerializer.Deserialize<List<VideoMaterial>>(jsonString));
-            }
+            var taskArticleRead = File.ReadAllTextAsync(defaultPathArticle, cancellationToken);
+            var taskBookRead = File.ReadAllTextAsync(defaultPathBook, cancellationToken);
+            var taskTestRead = File.ReadAllTextAsync(defaultPathTest, cancellationToken);
+            var taskVideoRead = File.ReadAllTextAsync(defaultPathVideo, cancellationToken);
 
+            var jsonArticleString = await taskArticleRead;
+            var jsonBookString = await taskBookRead;
+            var jsonTestString = await taskTestRead;
+            var jsonVideoString = await taskVideoRead;
+
+            if (jsonArticleString != "")
+            {
+                result.AddRange(JsonSerializer.Deserialize<List<InternetArticleMaterial>>(jsonArticleString));
+            }
+            if (jsonBookString != "")
+            {
+                result.AddRange(JsonSerializer.Deserialize<List<DigitalBookMaterial>>(jsonBookString));
+            }
+            if (jsonTestString != "")
+            {
+                result.AddRange(JsonSerializer.Deserialize<List<TestMaterial>>(jsonTestString));
+            }
+            if (jsonVideoString != "")
+            {
+                result.AddRange(JsonSerializer.Deserialize<List<VideoMaterial>>(jsonVideoString));
+            }
             return result;
         }
 
-        private void SaveList(List<Material> materialList)
+        private async Task<bool> SaveListAsync(List<Material> materialList, CancellationToken cancellationToken = default)
         {
-            string jsonString;
-            jsonString = JsonSerializer.Serialize(materialList.OfType<InternetArticleMaterial>());
-            File.WriteAllText(defaultPathArticle, jsonString);
-            jsonString = JsonSerializer.Serialize(materialList.OfType<DigitalBookMaterial>());
-            File.WriteAllText(defaultPathBook, jsonString);
-            jsonString = JsonSerializer.Serialize(materialList.OfType<TestMaterial>());
-            File.WriteAllText(defaultPathTest, jsonString);
-            jsonString = JsonSerializer.Serialize(materialList.OfType<VideoMaterial>());
-            File.WriteAllText(defaultPathVideo, jsonString);
+            var jsonArticleString = JsonSerializer.Serialize(materialList.OfType<InternetArticleMaterial>());
+            var jsonBookString = JsonSerializer.Serialize(materialList.OfType<DigitalBookMaterial>());
+            var jsonTestString = JsonSerializer.Serialize(materialList.OfType<TestMaterial>());
+            var jsonVideoString = JsonSerializer.Serialize(materialList.OfType<VideoMaterial>());
+            try
+            {
+                var articleWriteTask = File.WriteAllTextAsync(defaultPathArticle, jsonArticleString, cancellationToken);
+                var bookWriteTask = File.WriteAllTextAsync(defaultPathBook, jsonBookString, cancellationToken);
+                var testWriteTask = File.WriteAllTextAsync(defaultPathTest, jsonTestString, cancellationToken);
+                var videoWriteTask = File.WriteAllTextAsync(defaultPathVideo, jsonVideoString, cancellationToken);
+
+                await articleWriteTask;
+                await bookWriteTask;
+                await testWriteTask;
+                await videoWriteTask;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+            return true;
         }
 
-        public int FindIndex(string name)
+        public async Task<Material> FindAsync(Specification<Material> specification, CancellationToken cancellationToken = default)
         {
-            var items = LoadList();
-            int index = items.FindIndex(x => x.Name == name);
-            return index + 1;
+            var materialList = await LoadListAsync(cancellationToken);
+            return materialList.AsQueryable().Where(specification.Expression).SingleOrDefault(); ;
         }
 
-        public Material Find(Specification<Material> specification)
+        public async Task<PagedList<Material>> LoadListAsync(Specification<Material> specification, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-            List<Material> materialList = LoadList();
-            return materialList.Find(specification.IsSatisfiedBy);
-        }
-
-        public PagedList<Material> LoadList(Specification<Material> specification, int pageNumber, int pageSize)
-        {
-            var items = LoadList().Where(specification.IsSatisfiedBy);
-            items = items.OrderBy(x => x.Id).ToList();
+            var items = await LoadListAsync(cancellationToken);
+            items = items.AsQueryable().Where(specification.Expression).OrderBy(x => x.Id).ToList();
             return new PagedList<Material>(pageNumber, pageSize, items.Count(), items.Skip((pageNumber - 1) * pageSize).Take(pageSize));
         }
     }

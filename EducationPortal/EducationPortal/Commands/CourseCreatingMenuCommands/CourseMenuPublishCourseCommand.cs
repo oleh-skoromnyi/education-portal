@@ -26,7 +26,7 @@ namespace EducationPortal.UI.Commands
             while (input == 0)
             {
                 Console.Clear();
-                var collection = courseService.GetCourses(pageNumber, pageSettings.PageSize);
+                var collection = courseService.GetCoursesAsync(pageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
                 foreach (var courseItem in collection.Items.Where(x => !x.IsPublished && x.AuthorId == userIdTemp))
                 {
                     Console.WriteLine($"{courseItem.Id}.{courseItem.Name}");
@@ -63,7 +63,7 @@ namespace EducationPortal.UI.Commands
                 }
                 int.TryParse(inputString, out input);
             }
-            if (courseService.PublishCourse(userId, input))
+            if (courseService.PublishCourseAsync(userId, input).GetAwaiter().GetResult())
             {
                 Console.WriteLine("Course publicated successfully");
             }

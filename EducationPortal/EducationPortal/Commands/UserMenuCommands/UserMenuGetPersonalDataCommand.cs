@@ -18,7 +18,7 @@ namespace EducationPortal.UI.Commands
         }
         public void Execute(ref State state, ref int userId)
         {
-            var userData = service.GetPersonalData(userId);
+            var userData = service.GetPersonalDataAsync(userId).GetAwaiter().GetResult();
             Console.WriteLine($"Login: {userData.Login}");
             Console.WriteLine($"Name: {userData.Name}");
             Console.WriteLine($"Email: {userData.Email}");

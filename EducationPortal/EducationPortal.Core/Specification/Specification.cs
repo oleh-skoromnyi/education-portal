@@ -6,7 +6,7 @@ using System.Text;
 namespace EducationPortal.Core
 {
     public class Specification<TEntity>
-     where TEntity : Entity
+        where TEntity : Entity
     {
         public Expression<Func<TEntity, bool>> Expression { get; }
         public List<Expression<Func<TEntity, object>>> Include { get; set; }
@@ -32,9 +32,17 @@ namespace EducationPortal.Core
         }
     }
 
-    //public class FindById<TEntity> : Specification<TEntity>
-    //    where TEntity : Entity
-    //{
-    //    public override Expression<Func<TEntity, bool>> expression => entity => entity.Id 
-    //}
+    public class FindByIdSpecification<TEntity> : Specification<TEntity>
+        where TEntity : Entity
+    {
+        public FindByIdSpecification(int id)
+            :base(x => x.Id == id){}
+    }
+
+
+    public class FindUserByLoginSpecification : Specification<User>
+    {
+        public FindUserByLoginSpecification(string login)
+            : base(x => x.Login == login) { }
+    }
 }

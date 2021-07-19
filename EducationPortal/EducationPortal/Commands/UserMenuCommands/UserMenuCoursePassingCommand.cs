@@ -27,13 +27,13 @@ namespace EducationPortal.UI.Commands
         public void Execute(ref State state, ref int userId)
         {
             int input;
-            var userData = userService.GetPersonalData(userId);
+            var userData = userService.GetPersonalDataAsync(userId).GetAwaiter().GetResult();
             Console.WriteLine($"Write course id:");
             if (userData.CourseList != null)
             {
                 foreach (var course in userData.CourseList)
                 {
-                    var courseData = courseService.GetCourse(course.CourseId);
+                    var courseData = courseService.GetCourseAsync(course.CourseId).GetAwaiter().GetResult();
                     Console.WriteLine($"{courseData.Id}.{courseData.Name}");
                     Console.WriteLine($"{courseData.Description}");
                     Console.WriteLine($"Complete : {(course.IsComplete ? '+' : '-')}");
@@ -55,7 +55,7 @@ namespace EducationPortal.UI.Commands
         private void CoursePassing(int userId, int courseId)
         {
             Console.Clear();
-            var course = courseService.GetCourse(courseId);
+            var course = courseService.GetCourseAsync(courseId).GetAwaiter().GetResult();
             string input = "";
             int materialId = -1;
 
@@ -63,13 +63,13 @@ namespace EducationPortal.UI.Commands
             {
                 Console.Clear();
                 Console.WriteLine("Write material id(write exit to exit)");
-                var user = userService.GetPersonalData(userId);
+                var user = userService.GetPersonalDataAsync(userId).GetAwaiter().GetResult();
 
                 if (course.MaterialList.Any())
                 {
                     foreach (var material in course.MaterialList)
                     {
-                        var materialData = materialService.GetMaterial(material.MaterialId);
+                        var materialData = materialService.GetMaterialAsync(material.MaterialId).GetAwaiter().GetResult();
                         Console.WriteLine($"{(user.MaterialList.Any(y => y.MaterialId == material.MaterialId) ? '+' : '-')}{material.MaterialId}::{materialData.Name}");
                     }
                 }
@@ -81,7 +81,7 @@ namespace EducationPortal.UI.Commands
 
                     if (courseId != -1 && course.MaterialList.Any(x => x.MaterialId == materialId))
                     {
-                        var material = materialService.GetMaterial(materialId);
+                        var material = materialService.GetMaterialAsync(materialId).GetAwaiter().GetResult();
                         Console.WriteLine($"{material.Id}::{material.Name}");
 
                         if (material is VideoMaterial)
@@ -94,7 +94,7 @@ namespace EducationPortal.UI.Commands
                             input = Console.ReadLine();
                             if (input != "")
                             {
-                                userService.LearnMaterial(user.Id, video);
+                                userService.LearnMaterialAsync(user.Id, materialId).GetAwaiter().GetResult();
                             }
                         }
                         if (material is DigitalBookMaterial)
@@ -109,7 +109,7 @@ namespace EducationPortal.UI.Commands
                             input = Console.ReadLine();
                             if (input != "")
                             {
-                                userService.LearnMaterial(user.Id, book);
+                                userService.LearnMaterialAsync(user.Id, materialId).GetAwaiter().GetResult();
                             }
                         }
                         if (material is InternetArticleMaterial)
@@ -122,7 +122,7 @@ namespace EducationPortal.UI.Commands
                             input = Console.ReadLine();
                             if (input != "")
                             {
-                                userService.LearnMaterial(user.Id, article);
+                                userService.LearnMaterialAsync(user.Id, materialId).GetAwaiter().GetResult();
                             }
                         }
                         if (material is TestMaterial)
@@ -149,7 +149,7 @@ namespace EducationPortal.UI.Commands
                             }
                             if (count == test.Questions.Count())
                             {
-                                userService.LearnMaterial(user.Id, test);
+                                userService.LearnMaterialAsync(user.Id, materialId).GetAwaiter().GetResult();
                             }
                         }
                     }

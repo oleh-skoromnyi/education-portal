@@ -19,7 +19,7 @@ namespace EducationPortal.UI.Commands
         public void Execute(ref State state, ref int userId)
         {
             int input;
-            var userData = service.GetPersonalData(userId);
+            var userData = service.GetPersonalDataAsync(userId).GetAwaiter().GetResult();
             Console.WriteLine($"1.Name: {userData.Name}");
             Console.WriteLine($"2.Email: {userData.Email}");
             Console.WriteLine($"3.Phone: {userData.Phone}");
@@ -40,7 +40,7 @@ namespace EducationPortal.UI.Commands
                     userData.Phone = Console.ReadLine();
                     break;
             }
-            if (service.ChangePersonalData(userData))
+            if (service.ChangePersonalDataAsync(userData).GetAwaiter().GetResult())
             {
                 Console.WriteLine($"Changed successfully");
             }

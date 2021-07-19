@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Core
 {
     public interface ISkillService
     {
-        public bool AddSkill(Skill skill);
-        public bool ChangeSkill(Skill skill);
-        public PagedList<Skill> GetSkills(int pageNumber, int pageSize);
-        public Skill GetSkill(int id);
+        public Task<bool> AddSkillAsync(Skill skill, CancellationToken cancellationToken = default);
+        public Task<bool> ChangeSkillAsync(Skill skill, CancellationToken cancellationToken = default);
+        public Task<PagedList<Skill>> GetSkillsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+        public Task<Skill> GetSkillAsync(int id, CancellationToken cancellationToken = default);
     }
 }

@@ -68,7 +68,7 @@ namespace EducationPortal.UI.Commands
                 Name = testName,
                 Questions = questions
             };
-            if (service.AddMaterial(addedMaterial))
+            if (service.AddMaterialAsync(addedMaterial).GetAwaiter().GetResult())
             {
                 Console.WriteLine("Material added successful");
             }

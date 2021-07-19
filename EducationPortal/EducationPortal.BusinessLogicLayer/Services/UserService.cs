@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using EducationPortal.Core;
+using FluentValidation;
 
 namespace EducationPortal.BLL
 {
@@ -10,19 +13,24 @@ namespace EducationPortal.BLL
     {
         private IRepository<User> _userRepository;
         private IRepository<Course> _courseRepository;
+        private IRepository<Material> _materialRepository;
+        private IValidator<User> _userValidator;
 
-        public UserService(IRepository<User> repos, IRepository<Course> courseRepos)
+        public UserService(IRepository<User> repos, IRepository<Course> courseRepos,
+            IRepository<Material> materialRepos, IValidator<User> userValidator)
         {
             this._userRepository = repos;
             this._courseRepository = courseRepos;
+            this._materialRepository = materialRepos;
+            this._userValidator = userValidator;
         }
 
-        public string GetUserLogin(int id)
+        public async Task<string> GetUserLoginAsync(int userId, CancellationToken cancellationToken = default)
         {
-            if (_userRepository.Exist(id))
+            var specification = new FindByIdSpecification<User>(userId);
+            if (await _userRepository.ExistAsync(specification, cancellationToken))
             {
-                var specification = new Specification<User>(x => x.Id == id);
-                return _userRepository.Find(specification).Login;
+                return (await _userRepository.FindAsync(specification, cancellationToken)).Login;
             }
             else
             {
@@ -30,36 +38,32 @@ namespace EducationPortal.BLL
             }
         }
 
-        public bool ChangePersonalData(User user)
+        public async Task<bool> ChangePersonalDataAsync(User user, CancellationToken cancellationToken = default)
         {
-            if (_userRepository.FindIndex(user.Login) != 0)
+            if ((await _userValidator.ValidateAsync(user, cancellationToken)).IsValid)
             {
-                if (_userRepository.Update(user))
+                if (await _userRepository.ExistAsync(new FindByIdSpecification<User>(user.Id), cancellationToken))
                 {
-                    return true;
-                }
-                else
-                {
-                    return false;
+                    if (await _userRepository.UpdateAsync(user, cancellationToken))
+                    {
+                        return true;
+                    }
                 }
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
-        public PagedList<Course> GetAvailableCourses(int id, int pageNumber, int pageSize)
+        public async Task<PagedList<Course>> GetAvailableCoursesAsync(int userId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-            var userSpecification = new Specification<User>(x => x.Id == id);
+            var userSpecification = new FindByIdSpecification<User>(userId);
             userSpecification.Include.Add(x => x.SkillList);
-            userSpecification.Include.Add(x => x.CourseList); 
-            var user = _userRepository.Find(userSpecification);
+            userSpecification.Include.Add(x => x.CourseList);
+            var user = await _userRepository.FindAsync(userSpecification, cancellationToken);
 
-            var courseSpecification = new Specification<Course>(x => !user.CourseList.Any(y=>y.CourseId == x.Id));
+            var courseSpecification = new Specification<Course>(x => true);
             courseSpecification.Include.Add(x => x.RequirementSkillList);
-            var coursesList = _courseRepository.LoadList(courseSpecification, pageNumber, pageSize);
-            var items = coursesList.Items.Where(x => x.RequirementSkillList
+            var coursesList = await _courseRepository.LoadListAsync(courseSpecification, pageNumber, pageSize, cancellationToken);
+            var items = coursesList.Items.Where(x => !user.CourseList.Any(y => y.CourseId == x.Id) && x.RequirementSkillList
                                             .All(y => user.SkillList
                                             .Any(z => z.SkillId == y.SkillId
                                                     && z.Level >= y.Level)));
@@ -67,19 +71,26 @@ namespace EducationPortal.BLL
             return new PagedList<Course>(coursesList.PageNumber, coursesList.PageSize, coursesList.PageCount, items);
         }
 
-        public UserCourse GetCourse(int userId, int courseId)
+        public async Task<UserCourse> GetCourseAsync(int userId, int courseId, CancellationToken cancellationToken = default)
         {
-            var userSpecification = new Specification<User>(x => x.Id == userId);
+            var userSpecification = new FindByIdSpecification<User>(userId);
             userSpecification.Include.Add(x => x.CourseList);
-            var user = _userRepository.Find(userSpecification);
+            var user = await _userRepository.FindAsync(userSpecification, cancellationToken);
             return user.CourseList.First(x => x.Course.Id == courseId);
         }
 
-        public PagedList<UserCourse> GetCourses(int id,int pageNumber,int pageSize)
+        public async Task<PagedList<Course>> GetCreatedNotPublishedCoursesAsync(int userId, int pageNumber,int pageSize, CancellationToken cancellationToken = default)
         {
-            var userSpecification = new Specification<User>(x => x.Id == id);
+            var courseSpecification = new Specification<Course>(x=>!x.IsPublished && x.AuthorId == userId);
+            var courseList = await _courseRepository.LoadListAsync(courseSpecification, pageNumber, pageSize, cancellationToken);
+            return courseList;
+        }
+
+        public async Task<PagedList<UserCourse>> GetCoursesAsync(int userId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var userSpecification = new FindByIdSpecification<User>(userId);
             userSpecification.Include.Add(x => x.CourseList);
-            var user = _userRepository.Find(userSpecification);
+            var user = await _userRepository.FindAsync(userSpecification, cancellationToken);
             int count = 0;
             var courseList = new List<UserCourse>();
             if (user.CourseList != null)
@@ -87,23 +98,23 @@ namespace EducationPortal.BLL
                 count = user.CourseList.Count;
                 courseList = user.CourseList.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
             }
-            return new PagedList<UserCourse>(pageNumber,pageSize,count,courseList);
+            return new PagedList<UserCourse>(pageNumber, pageSize, count, courseList);
         }
 
-        public User GetPersonalData(int id)
+        public async Task<User> GetPersonalDataAsync(int userId, CancellationToken cancellationToken = default)
         {
-            var userSpecification = new Specification<User>(x => x.Id == id);
+            var userSpecification = new FindByIdSpecification<User>(userId);
             userSpecification.Include.Add(x => x.CourseList);
             userSpecification.Include.Add(x => x.SkillList);
             userSpecification.Include.Add(x => x.MaterialList);
-            return _userRepository.Find(userSpecification);
+            return await _userRepository.FindAsync(userSpecification, cancellationToken);
         }
 
-        public PagedList<UserSkill> GetSkills(int id, int pageNumber, int pageSize)
+        public async Task<PagedList<UserSkill>> GetSkillsAsync(int userId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-            var userSpecification = new Specification<User>(x => x.Id == id);
+            var userSpecification = new FindByIdSpecification<User>(userId);
             userSpecification.Include.Add(x => x.SkillList);
-            var user = _userRepository.Find(userSpecification);
+            var user = await _userRepository.FindAsync(userSpecification, cancellationToken);
             int count = 0;
             var skillList = new List<UserSkill>();
             if (user.SkillList != null)
@@ -114,13 +125,17 @@ namespace EducationPortal.BLL
             return new PagedList<UserSkill>(pageNumber, pageSize, count, skillList);
         }
 
-        public bool LearnMaterial(int id, Material material)
+        public async Task<bool> LearnMaterialAsync(int userId, int materialId, CancellationToken cancellationToken = default)
         {
-            if (_userRepository.Exist(id))
+            var userSpecification = new FindByIdSpecification<User>(userId);
+            if (await _userRepository.ExistAsync(userSpecification, cancellationToken))
             {
-                var userSpecification = new Specification<User>(x => x.Id == id);
+                var materialSpecification = new FindByIdSpecification<Material>(materialId);
                 userSpecification.Include.Add(x => x.MaterialList);
-                var user = _userRepository.Find(userSpecification);
+                var userTask = _userRepository.FindAsync(userSpecification, cancellationToken);
+                var materialTask = _materialRepository.FindAsync(materialSpecification, cancellationToken);
+                var user = await userTask;
+                var material = await materialTask;
                 if (user.MaterialList == null)
                 {
                     user.MaterialList = new List<LearnedMaterial>();
@@ -128,37 +143,46 @@ namespace EducationPortal.BLL
                 if (!user.MaterialList.Any(x => x.MaterialId == material.Id))
                 {
                     var temp = new LearnedMaterial(material);
-                    temp.UserId = id;
+                    temp.UserId = userId;
                     temp.MaterialId = material.Id;
                     user.MaterialList.Add(temp);
-                    if (_userRepository.Update(user))
+                    if (await _userRepository.UpdateAsync(user, cancellationToken))
                     {
-                        return FindProgressOfCourses(id);
+                        return await FindProgressOfCoursesAsync(userId, cancellationToken);
                     }
                 }
             }
             return false;
         }
 
-        public bool StartLearnCourse(int id, Course course)
+        public async Task<bool> StartLearnCourseAsync(int userId, int courseId, CancellationToken cancellationToken = default)
         {
-            if (_userRepository.Exist(id))
+            var userSpecification = new FindByIdSpecification<User>(userId);
+            var courseSpecification = new FindByIdSpecification<Course>(courseId);
+            if (await _userRepository.ExistAsync(userSpecification, cancellationToken))
             {
-                var userSpecification = new Specification<User>(x => x.Id == id);
                 userSpecification.Include.Add(x => x.CourseList);
-                var user = _userRepository.Find(userSpecification);
+
+                var userTask = _userRepository.FindAsync(userSpecification, cancellationToken);
+                var courseTask = _courseRepository.FindAsync(courseSpecification, cancellationToken);
+
+                var user = await userTask;
+                var course = await courseTask;
+
                 if (user.CourseList == null)
                 {
                     user.CourseList = new List<UserCourse>();
                 }
+
                 var temp = new UserCourse(course);
                 temp.Course = null;
-                temp.UserId = id;
+                temp.UserId = userId;
                 temp.CourseId = course.Id;
                 user.CourseList.Add(temp);
-                if (_userRepository.Update(user))
+
+                if (await _userRepository.UpdateAsync(user, cancellationToken))
                 {
-                    return FindProgressOfCourses(id);
+                    return await FindProgressOfCoursesAsync(userId, cancellationToken);
                 }
                 else
                 {
@@ -170,13 +194,13 @@ namespace EducationPortal.BLL
                 return false;
             }
         }
-        private bool FindProgressOfCourses(int id)
+        private async Task<bool> FindProgressOfCoursesAsync(int userId, CancellationToken cancellationToken = default)
         {
-            var userSpecification = new Specification<User>(x => x.Id == id);
+            var userSpecification = new FindByIdSpecification<User>(userId);
             userSpecification.Include.Add(x => x.CourseList);
             userSpecification.Include.Add(x => x.SkillList);
             userSpecification.Include.Add(x => x.MaterialList);
-            var user = _userRepository.Find(userSpecification); 
+            var user = await _userRepository.FindAsync(userSpecification, cancellationToken);
             if (user.MaterialList == null)
             {
                 user.MaterialList = new List<LearnedMaterial>();
@@ -189,12 +213,12 @@ namespace EducationPortal.BLL
             {
                 if (!userCourse.IsComplete)
                 {
-                    var courseSpecification = new Specification<Course>(x => x.Id == userCourse.CourseId);
+                    var courseSpecification = new FindByIdSpecification<Course>(userCourse.CourseId);
                     courseSpecification.Include.Add(x => x.MaterialList);
                     courseSpecification.Include.Add(x => x.GivenSkillList);
-                    var course = _courseRepository.Find(courseSpecification);
+                    var course = await _courseRepository.FindAsync(courseSpecification, cancellationToken);
                     userCourse.Progress = 0;
-                    
+
                     foreach (var material in course.MaterialList)
                     {
                         if (user.MaterialList.Any(x => x.MaterialId == material.MaterialId))
@@ -216,26 +240,15 @@ namespace EducationPortal.BLL
                             else
                             {
                                 var temp = new UserSkill { SkillId = skill.SkillId, Level = 1 };
-                                temp.UserId = id;
+                                temp.UserId = userId;
                                 user.SkillList.Add(temp);
                             }
                         }
                     }
                 }
             }
-            var result = _userRepository.Update(user);
+            var result = await _userRepository.UpdateAsync(user, cancellationToken);
             return result;
-        }
-
-        private bool IsAvailable(List<UserSkill> current, List<RequirenmentSkill> need)
-        {
-            foreach (var requirenment in need)
-            {
-                int index = current.FindIndex(x => x.Skill.Id == requirenment.Skill.Id);
-                if (!(index != -1 && current[index].Level >= requirenment.Level))
-                    return false;
-            }
-            return true;
         }
     }
 }

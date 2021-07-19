@@ -32,7 +32,7 @@ namespace EducationPortal.UI.Commands
             while (input == 0)
             {
                 Console.Clear();
-                var materialList = service.GetMaterials(pageNumber, pageSettings.PageSize);
+                var materialList = service.GetMaterialsAsync(pageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
                 var videoList = materialList.Items.OfType<VideoMaterial>();
                 var articlesList = materialList.Items.OfType<InternetArticleMaterial>();
                 var bookList = materialList.Items.OfType<DigitalBookMaterial>();

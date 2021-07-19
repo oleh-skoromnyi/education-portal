@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using EducationPortal.Core;
 using System.Linq;
 
@@ -15,16 +17,16 @@ namespace EducationPortal.DAL
             defaultPath = pathToDb;
         }
 
-        public bool Save(User entity)
+        public async Task<bool> InsertAsync(User entity, CancellationToken cancellationToken = default)
         {
-            List<User> userList = LoadList();
+            var userList = await LoadListAsync(cancellationToken);
             if (!userList.Any(x => x.Login == entity.Login))
             {
                 var temp = entity;
                 temp.Id = userList.Count() + 1;
                 userList.Add(temp);
                 var jsonString = JsonSerializer.Serialize(userList);
-                File.WriteAllText(defaultPath, jsonString);
+                await File.WriteAllTextAsync(defaultPath, jsonString, cancellationToken);
                 return true;
             }
             else
@@ -33,15 +35,15 @@ namespace EducationPortal.DAL
             }
         }
 
-        public bool Update(User entity)
+        public async Task<bool> UpdateAsync(User entity, CancellationToken cancellationToken = default)
         {
-            List<User> userList = LoadList();
-            int index = userList.FindIndex(x => x.Id == entity.Id);
+            var userList = await LoadListAsync(cancellationToken);
+            var index = userList.FindIndex(x => x.Id == entity.Id);
             if (index != -1)
             {
                 userList[index] = entity;
                 var jsonString = JsonSerializer.Serialize(userList);
-                File.WriteAllText(defaultPath, jsonString);
+                await File.WriteAllTextAsync(defaultPath, jsonString, cancellationToken);
                 return true;
             }
             else
@@ -50,25 +52,19 @@ namespace EducationPortal.DAL
             }
         }
 
-        public User Load(int id)
+        public async Task<bool> ExistAsync(Specification<User> specification, CancellationToken cancellationToken = default)
         {
-            List<User> userList = LoadList();
-            return userList.Find(x => x.Id == id);
+            var userList = await LoadListAsync(cancellationToken);
+            return userList.AsQueryable().Any(specification.Expression);
         }
 
-        public bool Exist(int id)
-        {
-            List<User> userList = LoadList();
-            return userList.Exists(x => x.Id == id);
-        }
-
-        public List<User> LoadList()
+        private async Task<List<User>> LoadListAsync(CancellationToken cancellationToken = default)
         {
             if (!File.Exists(defaultPath))
             {
                 File.Create(defaultPath).Close();
             }
-            string jsonString = File.ReadAllText(defaultPath);
+            var jsonString = await File.ReadAllTextAsync(defaultPath, cancellationToken);
             if (jsonString == "")
             {
                 return new List<User>();
@@ -79,28 +75,22 @@ namespace EducationPortal.DAL
             }
         }
 
-        public int Count()
+        public async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
-            List<User> userList = LoadList();
+            var userList = await LoadListAsync(cancellationToken);
             return userList.Count;
         }
-        public int FindIndex(string name)
+
+        public async Task<User> FindAsync(Specification<User> specification, CancellationToken cancellationToken = default)
         {
-            var items = LoadList();
-            int index = items.FindIndex(x => x.Login == name);
-            return index + 1;
+            var materialList = await LoadListAsync(cancellationToken);
+            return materialList.AsQueryable().Where(specification.Expression).SingleOrDefault();
         }
 
-        public User Find(Specification<User> specification)
+        public async Task<PagedList<User>> LoadListAsync(Specification<User> specification, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-            List<User> materialList = LoadList();
-            return materialList.Find(specification.IsSatisfiedBy);
-        }
-
-        public PagedList<User> LoadList(Specification<User> specification, int pageNumber, int pageSize)
-        {
-            var items = LoadList().Where(specification.IsSatisfiedBy);
-            items = items.OrderBy(x => x.Id).ToList();
+            var items = await LoadListAsync(cancellationToken);
+            items = items.AsQueryable().Where(specification.Expression).OrderBy(x => x.Id).ToList();
             return new PagedList<User>(pageNumber, pageSize, items.Count(), items.Skip((pageNumber - 1) * pageSize).Take(pageSize));
         }
     }

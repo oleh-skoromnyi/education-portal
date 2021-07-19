@@ -26,7 +26,7 @@ namespace EducationPortal.UI.Commands
             Console.WriteLine("Input your password: ");
             string password = Console.ReadLine();
             state.CurrentState = State.ProgramState.guest;
-            userId = authorization.Login(login, password);
+            userId = authorization.LoginAsync(login, password).GetAwaiter().GetResult();
             if (userId != -1)
             {
                 Console.WriteLine("Authorization successful");

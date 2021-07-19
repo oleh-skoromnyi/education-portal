@@ -30,7 +30,7 @@ namespace EducationPortal.UI.Commands
             while (input == 0)
             {
                 Console.Clear();
-                var collection = courseService.GetCourses(pageNumber, pageSettings.PageSize);
+                var collection = courseService.GetCoursesAsync(pageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
                 foreach (var courseItem in collection.Items.Where(x => !x.IsPublished && x.AuthorId == userIdTemp))
                 {
                     Console.WriteLine($"{courseItem.Id}.{courseItem.Name}");
@@ -65,9 +65,9 @@ namespace EducationPortal.UI.Commands
                         pageNumber--;
                     }
                 }
-                int.TryParse(inputString, out input); 
+                int.TryParse(inputString, out input);
             }
-            var course = courseService.GetCourse(input);
+            var course = courseService.GetCourseAsync(input).GetAwaiter().GetResult();
             if (input != -1 && course != null)
             {
                 string inputString = "";
@@ -86,17 +86,17 @@ namespace EducationPortal.UI.Commands
                     {
                         case 1:
                             Console.WriteLine("Choose material to add(+ means already added)");
-                            var materialList = materialService.GetMaterials(pageSettings.PageNumber,pageSettings.PageSize).Items.ToList();
-                            Console.WriteLine(string.Join('\n', materialList.Select(x => $"   {(course.MaterialList.Any(y => y.MaterialId == x.Id) ? '+' : '-')}{x.Id}::{x.Name}")));
+                            var materialList = materialService.GetMaterialsAsync(pageSettings.PageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
+                            Console.WriteLine(string.Join('\n', materialList.Items.ToList().Select(x => $"   {(course.MaterialList.Any(y => y.MaterialId == x.Id) ? '+' : '-')}{x.Id}::{x.Name}")));
                             inputString = Console.ReadLine();
                             int.TryParse(inputString, out id);
-                            if (id != 0 && id - 1 < materialList.Count())
+                            if (id != 0 && id - 1 < materialList.TotalItemCount)
                             {
-                                if (!course.MaterialList.Contains(new CourseMaterial(materialList[id - 1])))
+                                if (!course.MaterialList.Any(x=>x.MaterialId == id))
                                 {
-                                    if (courseService.AddMaterialToCourse(userId, materialList[id - 1], course.Id))
+                                    if (courseService.AddMaterialToCourseAsync(userId, id, course.Id).GetAwaiter().GetResult())
                                     {
-                                        course = courseService.GetCourse(course.Id);
+                                        course = courseService.GetCourseAsync(course.Id).GetAwaiter().GetResult();
                                         Console.WriteLine("Material to course added successful");
                                     }
                                     else
@@ -116,17 +116,17 @@ namespace EducationPortal.UI.Commands
                             break;
                         case 2:
                             Console.WriteLine("Choose Skill to add(+ means already added)");
-                            var skillList = skillService.GetSkills(pageSettings.PageNumber,pageSettings.PageSize).Items.ToList();
-                            Console.WriteLine(string.Join('\n', skillList.Select(x => $"   {(course.GivenSkillList.Any(y => y.SkillId == x.Id) ? '+' : '-')}{x.Id}::{x.Name}")));
+                            var skillList = skillService.GetSkillsAsync(pageSettings.PageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
+                            Console.WriteLine(string.Join('\n', skillList.Items.ToList().Select(x => $"   {(course.GivenSkillList.Any(y => y.SkillId == x.Id) ? '+' : '-')}{x.Id}::{x.Name}")));
                             inputString = Console.ReadLine();
                             int.TryParse(inputString, out id);
-                            if (id != 0 && id - 1 < skillList.Count())
+                            if (id != 0 && id - 1 < skillList.TotalItemCount)
                             {
-                                if (!course.GivenSkillList.Contains(new CourseGivenSkill(skillList[id - 1])))
+                                if (!course.GivenSkillList.Any(x=>x.SkillId == id))
                                 {
-                                    if (courseService.AddSkillsToCourse(userId, skillList[id - 1], course.Id))
+                                    if (courseService.AddSkillsToCourseAsync(userId, id, course.Id).GetAwaiter().GetResult())
                                     {
-                                        course = courseService.GetCourse(course.Id);
+                                        course = courseService.GetCourseAsync(course.Id).GetAwaiter().GetResult();
                                         Console.WriteLine("Skill to course added successful");
                                     }
                                     else
@@ -146,7 +146,7 @@ namespace EducationPortal.UI.Commands
                             break;
                         case 3:
                             Console.WriteLine("Choose Requirenment skill to add(+ means already added)");
-                            var requirenmentsList = skillService.GetSkills(pageSettings.PageNumber, pageSettings.PageSize).Items.ToList();
+                            var requirenmentsList = skillService.GetSkillsAsync(pageSettings.PageNumber, pageSettings.PageSize).GetAwaiter().GetResult().Items.ToList();
                             Console.WriteLine(string.Join('\n', requirenmentsList.Select(x => $"   {(course.RequirementSkillList.Any(y => x.Id == y.Skill.Id) ? '+' : '-')}{x.Id}::{x.Name}")));
                             inputString = Console.ReadLine();
                             int.TryParse(inputString, out id);
@@ -162,9 +162,9 @@ namespace EducationPortal.UI.Commands
                                     if (level != -1)
                                     {
                                         skillWithLevel.Level = level;
-                                        if (courseService.AddRequirenmentToCourse(userId, skillWithLevel, course.Id))
+                                        if (courseService.AddRequirenmentToCourseAsync(userId, skillWithLevel, course.Id).GetAwaiter().GetResult())
                                         {
-                                            course = courseService.GetCourse(course.Id);
+                                            course = courseService.GetCourseAsync(course.Id).GetAwaiter().GetResult();
                                             Console.WriteLine("Skill requirenments added successful");
                                         }
                                         else

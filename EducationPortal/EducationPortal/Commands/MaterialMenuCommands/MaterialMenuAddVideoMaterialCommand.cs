@@ -36,7 +36,7 @@ namespace EducationPortal.UI.Commands
                 Length = length,
                 Quality = quality
             };
-            if (service.AddMaterial(addedMaterial))
+            if (service.AddMaterialAsync(addedMaterial).GetAwaiter().GetResult())
             {
                 Console.WriteLine("Material added successful");
             }

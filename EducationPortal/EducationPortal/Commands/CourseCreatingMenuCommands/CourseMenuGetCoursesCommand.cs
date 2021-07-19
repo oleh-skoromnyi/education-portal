@@ -26,7 +26,7 @@ namespace EducationPortal.UI.Commands
             while (input == 0)
             {
                 Console.Clear();
-                var collection = courseService.GetCourses(pageNumber, pageSettings.PageSize);
+                var collection = courseService.GetCoursesAsync(pageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
                 foreach (var courseItem in collection.Items.Where(x => !x.IsPublished && x.AuthorId == userIdTemp))
                 {
                     Console.WriteLine($"{courseItem.Id}.{courseItem.Name}");

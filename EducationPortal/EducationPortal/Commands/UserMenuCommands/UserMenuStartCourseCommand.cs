@@ -28,7 +28,7 @@ namespace EducationPortal.UI.Commands
             while (input == 0)
             {
                 Console.Clear();
-                var courses = userService.GetAvailableCourses(userId, pageNumber, pageSettings.PageSize);
+                var courses = userService.GetAvailableCoursesAsync(userId, pageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
                 foreach (var availableCourse in courses.Items)
                 {
                     Console.WriteLine($"{availableCourse.Id}.{availableCourse.Name}");
@@ -58,7 +58,7 @@ namespace EducationPortal.UI.Commands
                         {
                             if (input != 0)
                             {
-                                if (userService.StartLearnCourse(userId, courseService.GetCourse(input)))
+                                if (userService.StartLearnCourseAsync(userId, input).GetAwaiter().GetResult())
                                 {
                                     Console.WriteLine($"You start course");
                                 }

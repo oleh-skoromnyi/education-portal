@@ -25,7 +25,8 @@ namespace EducationPortal.UI.Commands
             string login = Console.ReadLine();
             Console.WriteLine("Input your password: ");
             string password = Console.ReadLine();
-            if (authorization.Register(login, password))
+            var user = new User { Login = login, Password = password };
+            if (authorization.RegisterAsync(user).GetAwaiter().GetResult())
             {
                 Console.WriteLine("Registration successful");
             }

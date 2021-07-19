@@ -11,7 +11,7 @@ namespace EducationPortal.DAL
 {
     public static class PagedListExtention
     {
-        public static PagedList<T> ToPagedList<T>(this IQueryable<T> query, int pageNumber, int pageSize)
+        public static async Task<PagedList<T>> ToPagedListAsync<T>(this IQueryable<T> query, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             if (pageNumber < 1)
             {
@@ -27,14 +27,14 @@ namespace EducationPortal.DAL
             long totalCount = 0;
             if (query != null)
             {
-                totalCount = query.LongCount();
+                totalCount = await query.LongCountAsync(cancellationToken);
                 if (totalCount > 0)
                 {
                     query = pageNumber == 1
                                 ? query.Take(pageSize)
                                 : query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
-                    subset = query.ToList();
+                    subset = await query.ToListAsync(cancellationToken);
                 }
             }
 

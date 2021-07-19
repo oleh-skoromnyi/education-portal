@@ -1,25 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using EducationPortal.Core;
+using FluentValidation;
 
 namespace EducationPortal.BLL
 {
     public class SkillService : ISkillService
     {
-        private IRepository<Skill> _repository;
+        private IRepository<Skill> _skillRepository;
+        private IValidator<Skill> _skillValidator;
 
-        public SkillService(IRepository<Skill> repos)
+        public SkillService(IRepository<Skill> repos, IValidator<Skill> skillValidator)
         {
-            this._repository = repos;
+            this._skillRepository = repos;
+            this._skillValidator = skillValidator;
         }
-        public bool AddSkill(Skill skill)
+        public async Task<bool> AddSkillAsync(Skill skill, CancellationToken cancellationToken = default)
         {
-            if (skill != null)
+            if ((await _skillValidator.ValidateAsync(skill, cancellationToken)).IsValid)
             {
-                if (_repository.FindIndex(skill.Name) == 0)
+                if (await _skillRepository.InsertAsync(skill, cancellationToken))
                 {
-                    if (_repository.Save(skill))
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public async Task<bool> ChangeSkillAsync(Skill skill, CancellationToken cancellationToken = default)
+        {
+            if ((await _skillValidator.ValidateAsync(skill, cancellationToken)).IsValid)
+            {
+                if (await _skillRepository.ExistAsync(new FindByIdSpecification<Skill>(skill.Id), cancellationToken))
+                {
+                    if (await _skillRepository.UpdateAsync(skill))
                     {
                         return true;
                     }
@@ -28,35 +42,16 @@ namespace EducationPortal.BLL
             return false;
         }
 
-        public bool ChangeSkill(Skill skill)
+        public async Task<Skill> GetSkillAsync(int skillId, CancellationToken cancellationToken = default)
         {
-            if (_repository.FindIndex(skill.Name) != 0)
-            {
-                if (_repository.Update(skill))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
+            var specification = new FindByIdSpecification<Skill>(skillId);
+            return await _skillRepository.FindAsync(specification, cancellationToken);
         }
 
-        public Skill GetSkill(int id)
-        {
-            var specification = new Specification<Skill>(x => x.Id == id);
-            return _repository.Find(specification);
-        }
-
-        public PagedList<Skill> GetSkills(int pageNumber, int pageSize)
+        public async Task<PagedList<Skill>> GetSkillsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var specification = new Specification<Skill>(x => true);
-            return _repository.LoadList(specification, pageNumber, pageSize);
+            return await _skillRepository.LoadListAsync(specification, pageNumber, pageSize, cancellationToken);
         }
     }
 }

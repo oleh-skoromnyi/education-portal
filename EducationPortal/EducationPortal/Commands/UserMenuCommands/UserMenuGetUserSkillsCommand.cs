@@ -28,10 +28,10 @@ namespace EducationPortal.UI.Commands
             while (input == 0)
             {
                 Console.Clear();
-                var userSkills = service.GetSkills(userId, pageNumber, pageSettings.PageSize);
+                var userSkills = service.GetSkillsAsync(userId, pageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
                 foreach (var skill in userSkills.Items)
                 {
-                    var skillData = skillService.GetSkill(skill.SkillId);
+                    var skillData = skillService.GetSkillAsync(skill.SkillId).GetAwaiter().GetResult();
                     Console.WriteLine($"{skillData.Id}.{skillData.Name}");
                     Console.WriteLine($"{skillData.Description}");
                     Console.WriteLine($"Level : {skill.Level}");

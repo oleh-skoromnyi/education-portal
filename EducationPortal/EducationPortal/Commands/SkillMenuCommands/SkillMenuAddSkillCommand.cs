@@ -26,7 +26,7 @@ namespace EducationPortal.UI.Commands
                 Name = skillName,
                 Description = skillDescription
             };
-            if (service.AddSkill(addedSkill))
+            if (service.AddSkillAsync(addedSkill).GetAwaiter().GetResult())
             {
                 Console.WriteLine("Skill added successful");
             }

@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "User course";
+}
+
+<div class="container">
+    <table id="materialTable" class="table">
+        <tr>
+            <th>Id</th>
+            <th>Learn</th>
+        </tr>
+        @foreach (var item in ViewBag.MaterialItems)
+        {
+            <tr>
+                <td>@item.MaterialId</td>
+                <td>
+                    <form asp-controller="User" asp-action="LearnMaterial">
+                        <input name="courseId" value="@ViewBag.CourseId" hidden="hidden" />
+                        <input name="materialId" value="@item.MaterialId" hidden="hidden" />
+                        <input class="btn btn-primary" type="submit" value="Learn" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </table>
+</div>

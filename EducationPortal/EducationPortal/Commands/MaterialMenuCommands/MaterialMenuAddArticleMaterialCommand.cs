@@ -39,7 +39,7 @@ namespace EducationPortal.UI.Commands
                     LinqToResource = linqToResource,
                     DateOfPublication = date
                 };
-                if (service.AddMaterial(addedMaterial))
+                if (service.AddMaterialAsync(addedMaterial).GetAwaiter().GetResult())
                 {
                     Console.WriteLine("Material added successful");
                     Console.ReadLine();

@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="text-center">
+    <h1 class="display-4">
+        Welcome,
+        @if (Context.Request.Cookies["UserLogin"] != null)
+        {
+            <i>@Context.Request.Cookies["UserLogin"]</i>
+        }
+        else
+        {
+            <i>Anonim</i>
+        }
+    </h1>
+</div>

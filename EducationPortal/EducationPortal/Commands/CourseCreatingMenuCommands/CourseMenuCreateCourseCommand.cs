@@ -29,7 +29,7 @@ namespace EducationPortal.UI.Commands
                 GivenSkillList = new List<CourseGivenSkill>(),
                 RequirementSkillList = new List<RequirenmentSkill>()
             };
-            if (courseService.AddCourse(userId, addedCourse))
+            if (courseService.AddCourseAsync(userId, addedCourse).GetAwaiter().GetResult())
             {
                 Console.WriteLine("Course added successful");
             }

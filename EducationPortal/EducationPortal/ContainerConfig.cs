@@ -7,6 +7,8 @@ using EducationPortal.DAL.Repositories;
 using EducationPortal.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
 using EducationPortal.UI.Commands;
+using System.Text.Json;
+using System.IO;
 
 namespace EducationPortal.UI
 {
@@ -14,11 +16,13 @@ namespace EducationPortal.UI
     {
         public static IContainer Configure()
         {
+            var json = File.ReadAllText("config.json");
+            var config = JsonSerializer.Deserialize<Config>(json);
             var builder = new ContainerBuilder();
             var pageSettings = new PageSettings { PageNumber = 1, PageSize = 10 };
             builder.RegisterInstance(pageSettings);
 
-            EFDBConfig(ref builder);
+            EFDBConfig(ref builder, config);
 
             builder.RegisterType<AuthService>().As<IAuthService>().InstancePerLifetimeScope();
             builder.RegisterType<CourseService>().As<ICourseService>().InstancePerLifetimeScope();
@@ -64,31 +68,30 @@ namespace EducationPortal.UI
             return builder.Build();
         }
 
-        private static void FileDbConfig(ref ContainerBuilder builder)
+        private static void FileDbConfig(ref ContainerBuilder builder, Config config)
         {
-            builder.RegisterType<UserDb>().As<IRepository<User>>().WithParameter("pathToDb", "User.db");
-            builder.RegisterType<CourseDb>().As<IRepository<Course>>().WithParameter("pathToDb", "Course.db");
-            builder.RegisterType<SkillDb>().As<IRepository<Skill>>().WithParameter("pathToDb", "Skill.db");
+            builder.RegisterType<UserDb>().As<IRepository<User>>().WithParameter("pathToDb", config.FileDBPathToUsers);
+            builder.RegisterType<CourseDb>().As<IRepository<Course>>().WithParameter("pathToDb", config.FileDBPathToCourses);
+            builder.RegisterType<SkillDb>().As<IRepository<Skill>>().WithParameter("pathToDb", config.FileDBPathToSkills);
             var parameters = new List<NamedParameter>();
-            parameters.Add(new NamedParameter("pathToVideoDb", "Material.Video.db"));
-            parameters.Add(new NamedParameter("pathToArticleDb", "Material.Article.db"));
-            parameters.Add(new NamedParameter("pathToBookDb", "Material.Book.db"));
-            parameters.Add(new NamedParameter("pathToTestDb", "Material.Test.db"));
+            parameters.Add(new NamedParameter("pathToVideoDb", config.FileDBPathToVideoMaterials));
+            parameters.Add(new NamedParameter("pathToArticleDb", config.FileDBPathToArticlesMaterials));
+            parameters.Add(new NamedParameter("pathToBookDb", config.FileDBPathToBooksMaterials));
+            parameters.Add(new NamedParameter("pathToTestDb", config.FileDBPathToTestsMaterials));
             builder.RegisterType<MaterialDb>().As<IRepository<Material>>().WithParameters(parameters);
         }
 
-        private static void EFDBConfig(ref ContainerBuilder builder)
+        private static void EFDBConfig(ref ContainerBuilder builder, Config config)
         {
-            var connectionString = @"Server=.\SQLEXPRESS;Database=EducationPortalDb;Trusted_Connection=True;";
             var optionsBuilder = new DbContextOptionsBuilder<EducationPortalDbContext>()
-                  .UseSqlServer(connectionString);
+                  .UseSqlServer(config.EFConnectionString);
             builder.RegisterType<EducationPortalDbContext>().As<DbContext>().WithParameter(
-                "options", optionsBuilder.Options);
+                "options", optionsBuilder.Options).InstancePerLifetimeScope();
 
-            builder.RegisterType<UserRepository>().As<IRepository<User>>();
-            builder.RegisterType<CourseRepository>().As<IRepository<Course>>();
-            builder.RegisterType<SkillRepository>().As<IRepository<Skill>>();
-            builder.RegisterType<MaterialRepository>().As<IRepository<Material>>();
+            builder.RegisterType<Repository<User>>().As<IRepository<User>>().InstancePerLifetimeScope();
+            builder.RegisterType<Repository<Course>>().As<IRepository<Course>>().InstancePerLifetimeScope();
+            builder.RegisterType<Repository<Skill>>().As<IRepository<Skill>>().InstancePerLifetimeScope();
+            builder.RegisterType<Repository<Material>>().As<IRepository<Material>>().InstancePerLifetimeScope();
         }
     }
 }

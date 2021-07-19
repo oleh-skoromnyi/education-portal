@@ -2,63 +2,58 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 using EducationPortal.Core;
+using FluentValidation;
 
 namespace EducationPortal.BLL
 {
     public class MaterialService : IMaterialService
     {
         private IRepository<Material> _repository;
+        private IValidator<Material> _materialValidator;
 
-        public MaterialService(IRepository<Material> repos)
+        public MaterialService(IRepository<Material> repos, IValidator<Material> materialValidator)
         {
             this._repository = repos;
+            this._materialValidator = materialValidator;
         }
 
-        public bool AddMaterial(Material material)
+        public async Task<bool> AddMaterialAsync(Material material, CancellationToken cancellationToken = default)
         {
-            if (material != null)
+            if ((await _materialValidator.ValidateAsync(material, cancellationToken)).IsValid)
             {
-                if (_repository.FindIndex(material.Name) == 0)
-                { 
-                    if (_repository.Save(material))
-                    {
-                        return true;
-                    }
+                if (await _repository.InsertAsync(material, cancellationToken))
+                {
+                    return true;
                 }
             }
             return false;
         }
 
-        public bool ChangeMaterial(Material material)
+        public async Task<bool> ChangeMaterialAsync(Material material, CancellationToken cancellationToken = default)
         {
-            if (_repository.FindIndex(material.Name) != 0)
+            if ((await _materialValidator.ValidateAsync(material, cancellationToken)).IsValid)
             {
-                if (_repository.Update(material))
+                if (await _repository.UpdateAsync(material, cancellationToken))
                 {
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
-        public Material GetMaterial(int id)
+        public async Task<Material> GetMaterialAsync(int materialId, CancellationToken cancellationToken = default)
         {
-            var specification = new Specification<Material>(x => x.Id == id);
-            return _repository.Find(specification);
+            var specification = new FindByIdSpecification<Material>(materialId);
+            return await _repository.FindAsync(specification, cancellationToken);
         }
 
-        public PagedList <Material> GetMaterials(int pageNumber, int pageSize)
+        public async Task<PagedList<Material>> GetMaterialsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var specification = new Specification<Material>(x => true);
-            return _repository.LoadList(specification,pageNumber,pageSize);
+            return await _repository.LoadListAsync(specification, pageNumber, pageSize, cancellationToken);
         }
     }
 }

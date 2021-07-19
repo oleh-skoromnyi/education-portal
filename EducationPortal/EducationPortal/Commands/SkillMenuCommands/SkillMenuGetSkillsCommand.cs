@@ -25,7 +25,7 @@ namespace EducationPortal.UI.Commands
             while (input == 0)
             {
                 Console.Clear();
-                var skillList = service.GetSkills(pageNumber, pageSettings.PageSize);
+                var skillList = service.GetSkillsAsync(pageNumber, pageSettings.PageSize).GetAwaiter().GetResult();
                 foreach (var skill in skillList.Items)
                 {
                     Console.WriteLine($"{skill.Id}.{skill.Name}");

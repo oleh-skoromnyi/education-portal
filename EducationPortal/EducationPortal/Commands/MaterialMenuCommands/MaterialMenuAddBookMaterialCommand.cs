@@ -42,7 +42,7 @@ namespace EducationPortal.UI.Commands
                 YearOfPublication = int.Parse(yearOfPublication),
                 Format = format
             };
-            if (service.AddMaterial(addedMaterial))
+            if (service.AddMaterialAsync(addedMaterial).GetAwaiter().GetResult())
             {
                 Console.WriteLine("Material added successful");
             }

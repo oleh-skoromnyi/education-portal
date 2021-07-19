@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.DAL.EFCore"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.DAL.FileDb", "EducationPortal.DAL.FileDb\EducationPortal.DAL.FileDb.csproj", "{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EducationPortal.MVC", "EducationPortal.MVC\EducationPortal.MVC.csproj", "{50979764-B28D-442F-82B7-63FC8A8A6ADB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FBA9332-66FA-4F50-850C-963AEAE3AFBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50979764-B28D-442F-82B7-63FC8A8A6ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50979764-B28D-442F-82B7-63FC8A8A6ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50979764-B28D-442F-82B7-63FC8A8A6ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50979764-B28D-442F-82B7-63FC8A8A6ADB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

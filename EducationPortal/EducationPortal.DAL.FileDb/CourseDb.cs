@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using EducationPortal.Core;
 
 namespace EducationPortal.DAL
@@ -17,38 +19,32 @@ namespace EducationPortal.DAL
             defaultPath = pathToDb;
         }
 
-        public int Count()
+        public async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
-            List<Course> courseList = LoadList();
+            var courseList = await LoadListAsync(cancellationToken);
             return courseList.Count;
         }
 
-        public bool Exist(int id)
+        public async Task<bool> ExistAsync(Specification<Course> specification, CancellationToken cancellationToken = default)
         {
-            List<Course> courseList = LoadList();
-            return courseList.Exists(x => x.Id == id);
+            var courseList = await LoadListAsync(cancellationToken);
+            return courseList.AsQueryable().Any(specification.Expression);
         }
 
-        public int FindIndex(string name)
+        public async Task<Course> FindAsync(Specification<Course> specification, CancellationToken cancellationToken = default)
         {
-            var items = LoadList();
-            int index = items.FindIndex(x => x.Name == name);
-            return index + 1;
+            var courseList = await LoadListAsync();
+            return courseList.AsQueryable().Where(specification.Expression).SingleOrDefault();
         }
 
-        public Course Find(int id)
-        {
-            List<Course> courseList = LoadList();
-            return courseList.Find(x => x.Id == id);
-        }
 
-        public List<Course> LoadList()
+        public async Task<List<Course>> LoadListAsync(CancellationToken cancellationToken = default)
         {
             if (!File.Exists(defaultPath))
             {
                 File.Create(defaultPath).Close();
             }
-            string jsonString = File.ReadAllText(defaultPath);
+            var jsonString = await File.ReadAllTextAsync(defaultPath, cancellationToken);
             if (jsonString == "")
             {
                 return new List<Course>();
@@ -59,9 +55,29 @@ namespace EducationPortal.DAL
             }
         }
 
-        public bool Save(Course entity)
+        public async Task<PagedList<Course>> LoadListAsync(Specification<Course> specification, int pageNumber, int pageSize,CancellationToken cancellationToken = default)
         {
-            List<Course> courseList = LoadList();
+            if (!File.Exists(defaultPath))
+            {
+                File.Create(defaultPath).Close();
+            }
+            var jsonString = await File.ReadAllTextAsync(defaultPath, cancellationToken);
+            if (jsonString == "")
+            {
+                return new PagedList<Course>(pageNumber,pageSize,0,new List<Course>());
+            }
+            else
+            {
+                var items = JsonSerializer.Deserialize<List<Course>>(jsonString).AsQueryable()
+                    .Where(specification.Expression);
+                return new PagedList<Course>(pageNumber, pageSize, items.LongCount(), items.Skip(--pageNumber*pageSize).Take(pageSize));
+            }
+        }
+
+
+        public async Task<bool> InsertAsync(Course entity, CancellationToken cancellationToken = default)
+        {
+            var courseList = await LoadListAsync(cancellationToken);
             if (!courseList.Any(x => x.Name == entity.Name))
             {
                 var temp = entity;
@@ -77,9 +93,9 @@ namespace EducationPortal.DAL
             }
         }
 
-        public bool Update(Course entity)
+        public async Task<bool> UpdateAsync(Course entity, CancellationToken cancellationToken = default)
         {
-            List<Course> courseList = LoadList();
+            var courseList = await LoadListAsync(cancellationToken);
             int index = courseList.FindIndex(x => x.Id == entity.Id);
             if (index != -1)
             {
@@ -91,31 +107,6 @@ namespace EducationPortal.DAL
             else
             {
                 return false;
-            }
-        }
-
-        public Course Find(Specification<Course> specification)
-        {
-            List<Course> courseList = LoadList();
-            return courseList.Find(specification.IsSatisfiedBy);
-        }
-
-        public PagedList<Course> LoadList(Specification<Course> specification, int pageNumber, int pageSize)
-        {
-            if (!File.Exists(defaultPath))
-            {
-                File.Create(defaultPath).Close();
-            }
-            string jsonString = File.ReadAllText(defaultPath);
-            if (jsonString == "")
-            {
-                return new PagedList<Course>(pageNumber,pageSize,0,new List<Course>());
-            }
-            else
-            {
-                var items = JsonSerializer.Deserialize<List<Course>>(jsonString);
-                items = items.OrderBy(x=>x.Id).ToList();
-                return new PagedList<Course>(pageNumber, pageSize, items.Count, items.Skip((pageNumber-1)*pageSize).Take(pageSize));
             }
         }
     }

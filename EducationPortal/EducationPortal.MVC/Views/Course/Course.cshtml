@@ -1,0 +1,96 @@
+﻿@{
+    ViewData["Title"] = "Course view";
+}
+
+<div class="container">
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+    }
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+    @if (ViewBag.Errors != null)
+    {
+        @foreach (var error in ViewBag.Errors)
+        {
+            <div class="alert alert-danger">@error.ErrorMessage</div>
+        }
+    }
+
+    <table id="skillTable" class="table">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>AddSkillToRecuirenments</th>
+            <th>AddSkillToGettings</th>
+        </tr>
+        @foreach (var item in ViewBag.SkillItems)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>
+                    <form asp-controller="Course" asp-action="AddAdditions">
+                        <input type="text" name="Level" />
+                        <input name="AdditionType" value="requirenmentSkill" hidden="hidden" />
+                        <input name="AdditionId" value="@item.Id" hidden="hidden" />
+                        <input name="CourseId" value="@ViewBag.CourseId" hidden="hidden" />
+                        <input type="submit" class="btn btn-primary" value="Add to requirenments" />
+                    </form>
+                </td>
+                <td>
+                    <form asp-controller="Course" asp-action="AddAdditions">
+                        <input name="AdditionType" value="givenSkill" hidden="hidden" />
+                        <input name="AdditionId" value="@item.Id" hidden="hidden" />
+                        <input name="CourseId" value="@ViewBag.CourseId" hidden="hidden" />
+                        <input type="submit" class="btn btn-primary" value="Add to getting"/>
+                    </form>
+                </td>
+            </tr>
+        }
+    </table>
+
+    <form asp-controller="Course" asp-action="ChangePageInCourse" method="post">
+        <input name="CourseId" value="@ViewBag.CourseId" hidden="hidden" />
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.SkillPageCount; i++)
+            {
+                <li class="page-item @(i == ViewBag.SkillPageNumber?"active":"")"><input type="submit" class="page-link" name="skillPage" value="@i"></li>
+            }
+        </ul>
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.MaterialPageCount; i++)
+            {
+                <li class="page-item @(i == ViewBag.MaterialPageNumber?"active":"")"><input type="submit" class="page-link" name="materialPage" value="@i"></li>
+            }
+        </ul>
+    </form>
+    <table id="materialTable" class="table">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Add material</th>
+        </tr>
+        @foreach (var item in ViewBag.MaterialItems)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.GetType()</td>
+                <td>
+                    <form asp-controller="Course" asp-action="AddAdditions">
+                        <input name="AdditionType" value="material" hidden="hidden" />
+                        <input name="AdditionId" value="@item.Id" hidden="hidden" />
+                        <input name="CourseId" value="@ViewBag.CourseId" hidden="hidden" />
+                        <input type="submit" class="btn btn-primary" value="Add to getting"/>
+                    </form>
+                </td>
+            </tr>
+        }
+    </table>
+</div>

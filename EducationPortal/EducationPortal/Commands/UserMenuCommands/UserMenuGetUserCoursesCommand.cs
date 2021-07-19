@@ -20,12 +20,12 @@ namespace EducationPortal.UI.Commands
         }
         public void Execute(ref State state, ref int userId)
         {
-            var userData = service.GetPersonalData(userId);
+            var userData = service.GetPersonalDataAsync(userId).GetAwaiter().GetResult();
             if (userData.CourseList != null)
             {
                 foreach (var course in userData.CourseList)
                 {
-                    var courseData = courseService.GetCourse(course.CourseId);
+                    var courseData = courseService.GetCourseAsync(course.CourseId).GetAwaiter().GetResult();
                     Console.WriteLine($"{courseData.Id}.{courseData.Name}");
                     Console.WriteLine($"{courseData.Description}");
                     Console.WriteLine($"Complete : {(course.IsComplete ? '+' : '-')}");
