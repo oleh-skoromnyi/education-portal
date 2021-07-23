@@ -1,0 +1,129 @@
+﻿@{
+    ViewData["Title"] = "Material menu";
+}
+
+<div class="container">
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+    }
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+    @if (ViewBag.Errors != null)
+    {
+        @foreach (var error in ViewBag.Errors)
+        {
+            <div class="alert alert-danger">@error.ErrorMessage</div>
+        }
+    }
+    <div class="jumbotron">
+        <div id="materialCarousel" class="carousel slide">
+            <a class="left carousel-control btn btn-primary" style="justify-self:left" href="#materialCarousel" role="button" data-slide="prev">
+                <span>Previous</span>
+            </a>
+            <ol class="carousel-indicators">
+                <li data-target="#materialCarousel" data-slide-to="0" class="active"></li>
+                <li data-target="#materialCarousel" data-slide-to="1"></li>
+                <li data-target="#materialCarousel" data-slide-to="2"></li>
+            </ol>
+            <a class="right carousel-control btn btn-primary" style="justify-self:right" href="#materialCarousel" role="button" data-slide="next">
+                <span>Next</span>
+            </a>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <h2 class="text-center">Article form</h2>
+                    <form asp-controller="Material" asp-action="AddMaterial" method="post">
+                        <input name="type" hidden="hidden" value="article">
+                        <div class="form-group">
+                            <label>Name</label><br />
+                            <input class="form-control" type="text" name="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Linq to resource</label><br />
+                            <input class="form-control" type="text" name="LinqToResource">
+                        </div>
+                        <div class="form-group">
+                            <label>Date of publication</label><br />
+                            <input class="form-control" type="datetime" name="dateOfPublication">
+                        </div>
+                        <input class="btn btn-primary" type="submit" value="Submit">
+                    </form>
+                </div>
+                <div class="carousel-item">
+                    <h2 class="text-center">Book form</h2>
+                    <form asp-controller="Material" asp-action="AddMaterial" method="post">
+                        <input name="type" type="text" hidden="hidden" value="book">
+                        <div class="form-group">
+                            <label>Name</label><br />
+                            <input class="form-control" type="text" name="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Authors</label><br />
+                            <input class="form-control" type="text" name="Authors">
+                        </div>
+                        <div class="form-group">
+                            <label>Number of pages</label><br />
+                            <input class="form-control" type="text" name="Pages">
+                        </div>
+                        <div class="form-group">
+                            <label>Year of publication</label><br />
+                            <input class="form-control" type="text" name="YearOfPublication">
+                        </div>
+                        <div class="form-group">
+                            <label>File extension</label><br />
+                            <input class="form-control" type="text" name="FileExtension">
+                        </div>
+                        <input class="btn btn-primary" type="submit" value="Submit">
+                    </form>
+                </div>
+                <div class="carousel-item">
+                    <h2 class="text-center">Video form</h2>
+                    <form asp-controller="Material" asp-action="AddMaterial" method="post">
+                        <input name="type" hidden="hidden" value="video">
+                        <div class="form-group">
+                            <label>Name</label><br />
+                            <input class="form-control" type="text" name="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Quality</label><br />
+                            <input class="form-control" type="text" name="Quality">
+                        </div>
+                        <div class="form-group">
+                            <label>Length</label><br />
+                            <input class="form-control" type="text" name="Length">
+                        </div>
+                        <input class="btn btn-primary" type="submit" value="Submit">
+                    </form>
+                </div>
+            </div>
+            <div style="width:100%">
+            </div>
+        </div>
+    </div>
+    <table id="materialTable" class="table">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Type</th>
+        </tr>
+        @foreach (var item in ViewBag.Items)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.GetType()</td>
+            </tr>
+        }
+    </table>
+    <form asp-controller="Material" asp-action="ChangePage" method="post">
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.PageCount; i++)
+            {
+                <li class="page-item @(i == ViewBag.PageNumber?"active":"")"><input type="submit" class="page-link" name="page" value="@i"></li>
+            }
+        </ul>
+    </form>
+</div>
+

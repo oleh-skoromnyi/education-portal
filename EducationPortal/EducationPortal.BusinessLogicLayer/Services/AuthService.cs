@@ -1,68 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using EducationPortal.Core;
+using System.Threading.Tasks;
+using System.Threading;
+using FluentValidation;
 
-namespace EducationPortal.BusinessLogicLayer
+namespace EducationPortal.BLL
 {
-    public class AuthService : IAuth
+    public class AuthService : IAuthService
     {
-        private IDbContext<User> dbContext;
-        private User user;
+        private IRepository<User> _userRepository;
+        private IValidator<User> _userValidator;
 
-        public AuthService(IDbContext<User> context)
+        public AuthService(IRepository<User> context, IValidator<User> userValidator)
         {
-            this.dbContext = context;
+            this._userRepository = context;
+            this._userValidator = userValidator;
         }
 
-        public bool Login(string login, string password)
+        public async Task<int> LoginAsync(string login, string password, CancellationToken cancellationToken = default)
         {
-            User temp = dbContext.Load(login);
-            if (temp == null)
+            var result = await _userRepository.FindAsync(new FindUserByLoginSpecification(login), cancellationToken);
+            if (result != null)
             {
-                return false;
+                User temp = result;
+                if (VerifyHash(password, temp.Password))
+                {
+                    return temp.Id;
+                }
             }
-            if (VerifyHash(password, temp.Password))
-            {
-                this.user = temp;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return -1;
         }
 
-        public bool Register(string login, string password)
+        public async Task<bool> RegisterAsync(User user, CancellationToken cancellationToken = default)
         {
-            User temp = new User(
-               dbContext.Count(),
-               login,
-               GetHash(password));
-            return dbContext.Save(temp);
-        }
-
-        public bool Logout()
-        {
-            user = null;
-            return true;
-        }
-
-        public bool IsLogin()
-        {
-            return user != null ? true : false;
-        }
-
-        public string GetLogin()
-        {
-            if (user != null)
+            if ((await _userValidator.ValidateAsync(user, cancellationToken)).IsValid)
             {
-                return user.Login;
+                var regUser = user;
+                regUser.Password = GetHash(regUser.Password);
+                if (!await _userRepository.ExistAsync(new FindUserByLoginSpecification(user.Login), cancellationToken))
+                {
+                    return await _userRepository.InsertAsync(regUser, cancellationToken);
+                }
             }
-            else
-            {
-                return "Anonim";
-            }
+            return false;
         }
 
         private string GetHash(string input)
